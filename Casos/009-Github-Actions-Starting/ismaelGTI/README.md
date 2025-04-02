@@ -1,9 +1,5 @@
 # Caso 009: GitHub Actions & Monorepos
 
-## Contexto – Caso Real
-
-Tras muchos años de operar una aplicación monolítica para su negocio, el CTO de la famosa empresa "TuEmpresa" decide transformar esa aplicación monolítica en una serie de microservicios desplegados sobre una plataforma de contenedores para adaptarse a los nuevos tiempos tecnológicos, mejorar la eficiencia, escalabilidad y reducir costes. Debido a los años trabajando con una aplicación monolítica, se opta por disponer de un único repositorio de GitHub para almacenar todos los microservicios (en lugar de un repositorio para cada microservicio) así como una GitHub Action encargada de construir y desplegar los microservicios.
-
 ### Inconvenientes del Enfoque de Repositorio Único
 
 - Ante el cambio en un microservicio, todos los existentes en el repositorio serán construidos y desplegados, aun cuando no hayan sufrido cambios.

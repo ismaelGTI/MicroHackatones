@@ -20,7 +20,7 @@ jobs:
         id: archivos-cambiados
         uses: tj-actions/changed-files@v44
         with:
-          files: 'Micros/**'
+          files: 'Casos/009-Github-Actions-Starting/ismaelGTI/Micros/**'
 
       - name: Listar todos los ficheros 
         id: lista-archivos 
@@ -35,7 +35,6 @@ jobs:
               echo "$file was changed"
             done
             echo "archivocambiado=$all_archivos" >> $GITHUB_OUTPUT
-          fi
 
   microservicios:
     needs: listfiles

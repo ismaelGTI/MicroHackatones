@@ -1,5 +1,5 @@
 #!/bin/bash
-# Este script se utiliza para construir y desplegar el Microservicio Nº4.
+# Este script se utiliza para construir y desplegar el Microservicio Nº2.
 # Crea los directorios necesarios para la construcción y el despliegue,
 # copia los artefactos de construcción al directorio de despliegue,
 # y asegura que el proceso se detenga ante cualquier error.

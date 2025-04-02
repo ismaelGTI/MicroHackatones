@@ -14,4 +14,5 @@ mkdir -p "$BUILD_DIR" "$DEPLOY_DIR"
 cp -r "$BUILD_DIR"/* "$DEPLOY_DIR"
 
 echo "Build and deploy completed."
-echo "// Adding a comment to trigger the workflow" >> Micros/Micros2/archivo.js
+# Realizar un cambio en un archivo para activar el workflow
+echo "// Adding a comment to trigger the workflow" >> Micros/test_service/example.txt

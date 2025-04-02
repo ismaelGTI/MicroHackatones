@@ -1,0 +1,44 @@
+name: CI/CD para Microservicios Modificados     #Nombre del workflow.
+
+on:
+  push:
+    branches:
+      - main                                    #Cualquier push a la rama main activará el workflow.
+
+jobs:
+  detectar-cambios:                             #Primer Job
+    runs-on: ubuntu-latest                      #Se ejecutará sobre un compilador Ubuntu
+    outputs:                                    #Salidas del Job que pueden ser utilizadas por otros Jobs
+      servicios_modificados: ${{ steps.set-modified.outputs.modified_services }}      #Contiene los servicios modificados detectados por set-modified (Establecer servicios modificados)
+    steps:
+      - name: Checkout del repositorio               #Nombre del paso: Obtener el código fuente del repositorio
+        uses: actions/checkout@v2                    #Utiliza la acción checkout@v2 para clonar el repositorio en el runner
+
+      - name: Obtener archivos modificados           #Nombre del paso: Obtener archivos modificados
+        id: detect                                   #ID del paso. Se utilizará para referenciar la salida de este paso en otros pasos o jobs
+        uses: tj-actions/changed-files@v34.0.2       #Utiliza la acción tj-actions/changed-files@v34.0.2 para detectar archivos modificados
+        with:                                        #Sobre los archivos especificados:
+          files: |                                   # ** -> Todos los archivos del directorio
+            Casos/009-GitHub-Actions-Starting/ismaelGTI/Micros/**      
+
+      - name: Establecer servicios modificados                  #Nombre del paso: Establecer servicios modificados
+        id: set-modified                                        #ID del paso. Se utilizará para referenciar la salida de este paso en otros pasos o jobs
+        run: |                                                  #Script que se ejecuta en el paso
+          modified_services=$(echo "${{ steps.detect.outputs.modified_files }}" | grep -oP '(?<=Micros/)[^/]+' | jq -R -s -c 'split("\n")[:-1]')
+          echo "modified_services=$modified_services" >> $GITHUB_ENV
+
+
+  construir-y-desplegar:                          #Nombre del Job
+    needs: detectar-cambios                       #Depende del Job detectar-cambios
+    runs-on: ubuntu-latest                        #Se ejecutará sobre un compilador Ubuntu
+    strategy:                                     #Estrategia de ejecución
+        matrix:                                   #Ejecución en paralelo para diferentes valores de la matriz
+            servicio: ${{ fromJson(needs.detectar-cambios.outputs.servicios_modificados) }} #Los servicios modificados detectados en el Job "detectar_cambios" pasaran a la matriz
+    steps:
+        - name: Checkout del repositorio            #Nombre del paso: Obtener el código fuente del repositorio
+          uses: actions/checkout@v2                 #Utiliza la acción checkout@v2 para clonar el repositorio en el runner
+
+        - name: Construir y Desplegar               #Nombre del paso: Construir y Desplegar
+          run: |                                    #Script que se ejecuta en el paso
+                cd Casos/009-GitHub-Actions-Starting/ismaelGTI/Micros/${{ matrix.servicio }}
+                ./build-deploy.sh

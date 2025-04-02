@@ -2,8 +2,7 @@ name: CI/CD para Microservicios Modificados     #Nombre del workflow.
 
 on:
   push:                                        # Cualquier push a cualquier rama activará el workflow.
-    paths:
-      - 'Micros/**'  # Solo se activará para cambios en estos archivos.
+
 
 jobs:
   detectar-cambios:                             #Primer Job

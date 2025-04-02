@@ -1,48 +1,119 @@
-name: CI/CD para Microservicios Modificados     #Nombre del workflow.
+name: CI/CD para Microservicios Modificados
 
 on:
-  push:                                        # Cualquier push a cualquier rama activará el workflow.
-
+  push:  # Cualquier push a cualquier rama activará el workflow
 
 jobs:
-  detectar-cambios:                             #Primer Job
-    runs-on: ubuntu-latest                      #Se ejecutará sobre un compilador Ubuntu
-    outputs:                                    #Salidas del Job que pueden ser utilizadas por otros Jobs
-      servicios_modificados: ${{ steps.set-modified.outputs.modified_services }}      #Contiene los servicios modificados detectados por set-modified (Establecer servicios modificados)
+  detectar-cambios:
+    runs-on: ubuntu-latest
+    outputs:
+      servicios_modificados: ${{ steps.set-modified.outputs.modified_services }}
     steps:
-      - name: Checkout del repositorio               #Nombre del paso: Obtener el código fuente del repositorio
-        uses: actions/checkout@v2                    #Utiliza la acción checkout@v2 para clonar el repositorio en el runner
+      - name: Checkout del repositorio
+        uses: actions/checkout@v2
 
-      - name: Obtener archivos modificados           #Nombre del paso: Obtener archivos modificados
-        id: detect                                   #ID del paso. Se utilizará para referenciar la salida de este paso en otros pasos o jobs
-        uses: tj-actions/changed-files@v34.0.2       #Utiliza la acción tj-actions/changed-files@v34.0.2 para detectar archivos modificados
-        with:                                        #Sobre los archivos especificados:
-          files: |                                   # ** -> Todos los archivos del directorio
-            Micros/**      
+      - name: Obtener archivos modificados
+        id: detect
+        uses: tj-actions/changed-files@v34.0.2
+        with:
+          files: |
+            Micros/**
 
-      - name: Establecer servicios modificados                  #Nombre del paso: Establecer servicios modificados
-        id: set-modified                                        #ID del paso. Se utilizará para referenciar la salida de este paso en otros pasos o jobs
-        run: |                                                  #Script que se ejecuta en el paso
+      - name: Establecer servicios modificados
+        id: set-modified
+        run: |
           modified_services=$(echo "${{ steps.detect.outputs.modified_files }}" | grep -oP '(?<=Micros/)[^/]+' | jq -R -s -c 'split("\n")[:-1]')
           if [ -z "$modified_services" ]; then 
             modified_services="[]" 
           fi
           echo "modified_services=$modified_services" >> $GITHUB_ENV
-          echo "::set-output name=modified_services::$modified_services"
+          echo "modified_services=$modified_services" >> $GITHUB_OUTPUT
 
-
-  construir-y-desplegar:                          #Nombre del Job
-    needs: detectar-cambios                       #Depende del Job detectar-cambios
-    if: ${{ needs.detectar-cambios.outputs.servicios_modificados != '[]' }} # Solo se ejecuta si hay servicios modificados
-    runs-on: ubuntu-latest                        #Se ejecutará sobre un compilador Ubuntu
-    strategy:                                     #Estrategia de ejecución
-        matrix:                                   #Ejecución en paralelo para diferentes valores de la matriz
-            servicio: ${{ fromJson(needs.detectar-cambios.outputs.servicios_modificados) }} #Los servicios modificados detectados en el Job "detectar_cambios" pasaran a la matriz
+  construir-y-desplegar:
+    needs: detectar-cambios
+    if: ${{ needs.detectar-cambios.outputs.servicios_modificados != '[]' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        servicio: ${{ fromJson(needs.detectar-cambios.outputs.servicios_modificados) }}
     steps:
-        - name: Checkout del repositorio            #Nombre del paso: Obtener el código fuente del repositorio
-          uses: actions/checkout@v2                 #Utiliza la acción checkout@v2 para clonar el repositorio en el runner
+      - name: Checkout del repositorio
+        uses: actions/checkout@v2
 
-        - name: Construir y Desplegar               #Nombre del paso: Construir y Desplegar
-          run: |                                    #Script que se ejecuta en el paso
-                cd Micros/${{ matrix.servicio }}
-                ./build-deploy.sh
+      - name: Construir y Desplegar
+        run: |
+          cd Micros/${{ matrix.servicio }}
+          ./build-deploy.sh
+````
+
+### Pasos a seguir:
+1. **Actualizar el archivo `ci_cd.yml`** con el contenido corregido.
+2. **Realizar un cambio en cualquier archivo** para activar el workflow.
+3. **Hacer commit y push de los cambios al repositorio**.
+
+### Comandos para realizar los cambios y probar:
+
+```bash
+# Cambiar al directorio del repositorio
+cd C:/Users/jose.i.marin.ghalem/Git/MicroHackatones
+
+# Actualizar el archivo ci_cd.yml
+cat <<EOF > .github/workflows/ci_cd.yml
+name: CI/CD para Microservicios Modificados
+
+on:
+  push:  # Cualquier push a cualquier rama activará el workflow
+
+jobs:
+  detectar-cambios:
+    runs-on: ubuntu-latest
+    outputs:
+      servicios_modificados: ${{ steps.set-modified.outputs.modified_services }}
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v2
+
+      - name: Obtener archivos modificados
+        id: detect
+        uses: tj-actions/changed-files@v34.0.2
+        with:
+          files: |
+            Micros/**
+
+      - name: Establecer servicios modificados
+        id: set-modified
+        run: |
+          modified_services=$(echo "${{ steps.detect.outputs.modified_files }}" | grep -oP '(?<=Micros/)[^/]+' | jq -R -s -c 'split("\n")[:-1]')
+          if [ -z "$modified_services" ]; then 
+            modified_services="[]" 
+          fi
+          echo "modified_services=$modified_services" >> $GITHUB_ENV
+          echo "modified_services=$modified_services" >> $GITHUB_OUTPUT
+
+  construir-y-desplegar:
+    needs: detectar-cambios
+    if: ${{ needs.detectar-cambios.outputs.servicios_modificados != '[]' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        servicio: ${{ fromJson(needs.detectar-cambios.outputs.servicios_modificados) }}
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v2
+
+      - name: Construir y Desplegar
+        run: |
+          cd Micros/\${{ matrix.servicio }}
+          ./build-deploy.sh
+EOF
+
+# Realizar un cambio en un archivo para activar el workflow
+echo "// Adding a comment to trigger the workflow" >> Micros/test_service/example.txt
+
+# Añadir y hacer commit de los cambios
+git add .github/workflows/ci_cd.yml Micros/test_service/example.txt
+git commit -m "Corrigiendo el workflow y realizando un cambio para activarlo"
+git push origin main
+```
+
+Esto debería resolver el problema y permitir que el workflow se ejecute correctamente utilizando Environment Files en lugar de `set-output`.

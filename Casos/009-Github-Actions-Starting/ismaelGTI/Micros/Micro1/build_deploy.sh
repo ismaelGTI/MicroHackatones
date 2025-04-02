@@ -14,3 +14,5 @@ mkdir -p "$BUILD_DIR" "$DEPLOY_DIR"
 cp -r "$BUILD_DIR"/* "$DEPLOY_DIR"
 
 echo "Build and deploy completed."
+echo "# Cambio de prueba" >> Casos/009-Github-Actions-Starting/ismaelGTI/Micros/Micro1/build_deploy.sh
+#TEST DEL FUNCIONAMIENTO DEL WORKFLOW.

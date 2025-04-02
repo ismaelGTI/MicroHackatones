@@ -1,8 +1,3 @@
-# Cambiar al directorio del repositorio
-cd C:/Users/jose.i.marin.ghalem/Git/MicroHackatones
-
-# Actualizar el archivo ci_cd.yml
-cat <<EOF > .github/workflows/ci_cd.yml
 name: CI/CD para Microservicios Modificados
 
 on:
@@ -12,7 +7,7 @@ jobs:
   detectar-cambios:
     runs-on: ubuntu-latest
     outputs:
-      servicios_modificados: \${{ steps.set-modified.outputs.modified_services }}
+      servicios_modificados: ${{ steps.set-modified.outputs.modified_services }}
     steps:
       - name: Checkout del repositorio
         uses: actions/checkout@v2
@@ -27,34 +22,25 @@ jobs:
       - name: Establecer servicios modificados
         id: set-modified
         run: |
-          modified_services=\$(echo "\${{ steps.detect.outputs.modified_files }}" | grep -oP '(?<=Micros/)[^/]+' | jq -R -s -c 'split("\n")[:-1]')
-          if [ -z "\$modified_services" ]; then 
+          modified_services=$(echo "${{ steps.detect.outputs.modified_files }}" | grep -oP '(?<=Micros/)[^/]+' | jq -R -s -c 'split("\n")[:-1]')
+          if [ -z "$modified_services" ]; then 
             modified_services="[]" 
           fi
-          echo "modified_services=\$modified_services" >> \$GITHUB_ENV
-          echo "modified_services=\$modified_services" >> \$GITHUB_OUTPUT
+          echo "modified_services=$modified_services" >> $GITHUB_ENV
+          echo "modified_services=$modified_services" >> $GITHUB_OUTPUT
 
   construir-y-desplegar:
     needs: detectar-cambios
-    if: \${{ needs.detectar-cambios.outputs.servicios_modificados != '[]' }}
+    if: ${{ needs.detectar-cambios.outputs.servicios_modificados != '[]' }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        servicio: \${{ fromJson(needs.detectar-cambios.outputs.servicios_modificados) }}
+        servicio: ${{ fromJson(needs.detectar-cambios.outputs.servicios_modificados) }}
     steps:
       - name: Checkout del repositorio
         uses: actions/checkout@v2
 
       - name: Construir y Desplegar
         run: |
-          cd Micros/\${{ matrix.servicio }}
+          cd Micros/${{ matrix.servicio }}
           ./build-deploy.sh
-EOF
-
-# Realizar un cambio en un archivo para activar el workflow
-echo "// Adding a comment to trigger the workflow" >> Micros/test_service/example.txt
-
-# Añadir y hacer commit de los cambios
-git add .github/workflows/ci_cd.yml Micros/test_service/example.txt
-git commit -m "Corrigiendo el workflow y realizando un cambio para activarlo"
-git push origin main

@@ -1,59 +1,3 @@
-name: CI/CD para Microservicios Modificados
-
-on:
-  push:  # Cualquier push a cualquier rama activará el workflow
-
-jobs:
-  detectar-cambios:
-    runs-on: ubuntu-latest
-    outputs:
-      servicios_modificados: ${{ steps.set-modified.outputs.modified_services }}
-    steps:
-      - name: Checkout del repositorio
-        uses: actions/checkout@v2
-
-      - name: Obtener archivos modificados
-        id: detect
-        uses: tj-actions/changed-files@v34.0.2
-        with:
-          files: |
-            Micros/**
-
-      - name: Establecer servicios modificados
-        id: set-modified
-        run: |
-          modified_services=$(echo "${{ steps.detect.outputs.modified_files }}" | grep -oP '(?<=Micros/)[^/]+' | jq -R -s -c 'split("\n")[:-1]')
-          if [ -z "$modified_services" ]; then 
-            modified_services="[]" 
-          fi
-          echo "modified_services=$modified_services" >> $GITHUB_ENV
-          echo "modified_services=$modified_services" >> $GITHUB_OUTPUT
-
-  construir-y-desplegar:
-    needs: detectar-cambios
-    if: ${{ needs.detectar-cambios.outputs.servicios_modificados != '[]' }}
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        servicio: ${{ fromJson(needs.detectar-cambios.outputs.servicios_modificados) }}
-    steps:
-      - name: Checkout del repositorio
-        uses: actions/checkout@v2
-
-      - name: Construir y Desplegar
-        run: |
-          cd Micros/${{ matrix.servicio }}
-          ./build-deploy.sh
-````
-
-### Pasos a seguir:
-1. **Actualizar el archivo `ci_cd.yml`** con el contenido corregido.
-2. **Realizar un cambio en cualquier archivo** para activar el workflow.
-3. **Hacer commit y push de los cambios al repositorio**.
-
-### Comandos para realizar los cambios y probar:
-
-```bash
 # Cambiar al directorio del repositorio
 cd C:/Users/jose.i.marin.ghalem/Git/MicroHackatones
 
@@ -114,6 +58,3 @@ echo "// Adding a comment to trigger the workflow" >> Micros/test_service/exampl
 git add .github/workflows/ci_cd.yml Micros/test_service/example.txt
 git commit -m "Corrigiendo el workflow y realizando un cambio para activarlo"
 git push origin main
-```
-
-Esto debería resolver el problema y permitir que el workflow se ejecute correctamente utilizando Environment Files en lugar de `set-output`.

@@ -19,7 +19,7 @@ jobs:
         uses: tj-actions/changed-files@v34.0.2       #Utiliza la acción tj-actions/changed-files@v34.0.2 para detectar archivos modificados
         with:                                        #Sobre los archivos especificados:
           files: |                                   # ** -> Todos los archivos del directorio
-            casos/009-GitHub-Actions-Starting/ismaelGTI/Micros/**      
+            Casos/009-GitHub-Actions-Starting/ismaelGTI/Micros/**      
 
       - name: Establecer servicios modificados                  #Nombre del paso: Establecer servicios modificados
         id: set-modified                                        #ID del paso. Se utilizará para referenciar la salida de este paso en otros pasos o jobs
@@ -40,5 +40,5 @@ jobs:
 
         - name: Construir y Desplegar               #Nombre del paso: Construir y Desplegar
           run: |                                    #Script que se ejecuta en el paso
-                cd casos/009-GitHub-Actions-Starting/ismaelGTI/Micros/${{ matrix.servicio }}
+                cd Casos/009-GitHub-Actions-Starting/ismaelGTI/Micros/${{ matrix.servicio }}
                 ./build-deploy.sh
